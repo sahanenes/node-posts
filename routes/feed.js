@@ -1,5 +1,5 @@
 const express = require("express");
-const { query } = require("express-validator");
+const { body } = require("express-validator");
 
 const feedController = require("../controllers/feed");
 
@@ -11,10 +11,7 @@ router.get("/posts", feedController.getPosts);
 // POST /feed/post
 router.post(
   "/post",
-  [
-    query("title").trim().isLength({ min: 5 }),
-    query("content").trim().isLength({ min: 5 }),
-  ],
+  [body("title").isLength({ min: 5 }), body("content").isLength({ min: 5 })],
   feedController.createPost
 );
 
