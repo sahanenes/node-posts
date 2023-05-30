@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const path = require("path");
 const multer = require("multer");
+var cors = require("cors");
 
 const feedRoutes = require("./routes/feed");
 const authRoutes = require("./routes/auth");
@@ -50,7 +51,8 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
     "Access-Control-Allow-Methods",
-    "OPTIONS, GET, POST, PUT, PATCH, DELETE"
+    "OPTIONS, GET, POST, PUT, PATCH, DELETE",
+    "allowedHeaders,socket.io"
   );
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
@@ -58,8 +60,32 @@ app.use((req, res, next) => {
 
 app.use("/feed", feedRoutes);
 app.use("/auth", authRoutes);
+app.use(cors());
 
 mongoose
   .connect(`${URL}`)
-  .then((result) => app.listen(8080))
+  .then((result) => {
+    const server = app.listen(8080);
+
+    const io = require("/socket").init(
+      server,
+
+      {
+        cors: {
+          origin: "*",
+          methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+          allowedHeaders: ["Content-Type", "Authorization"],
+          credentials: true,
+        },
+      }
+    );
+
+    io.on(
+      "connection",
+
+      (socket) => {
+        console.log("client connected");
+      }
+    );
+  })
   .catch((err) => console.log(err));
